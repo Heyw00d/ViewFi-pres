@@ -1,1 +1,2124 @@
-pbpaste > index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ViewFi | The Rewarded Video Solution</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23E91E8C'/><polygon points='40,30 40,70 75,50' fill='white'/></svg>" type="image/svg+xml">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(160deg, #0a0a14 0%, #0d0d1a 40%, #12101f 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Gradient glows */
+    .glow-top {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120%;
+      height: 50%;
+      background: radial-gradient(ellipse at center, rgba(233,30,140,0.07) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-bottom {
+      position: fixed;
+      bottom: -10%;
+      right: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(ellipse at center, rgba(157,78,221,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Logo */
+    .logo {
+      position: fixed;
+      top: 20px;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .logo img {
+      height: 28px;
+      width: auto;
+    }
+
+    .logo-fallback {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-fallback span {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      z-index: 100;
+    }
+
+    /* Progress indicator */
+    .progress {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 100;
+    }
+
+    .progress-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 3px;
+      background-color: rgba(255,255,255,0.2);
+      transition: all 0.3s ease-out;
+    }
+
+    .progress-dot.active {
+      width: 20px;
+      background-color: #E91E8C;
+    }
+
+    /* Navigation hint */
+    .nav-hint {
+      position: fixed;
+      bottom: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      transition: opacity 0.3s ease-out;
+      pointer-events: none;
+    }
+
+    /* Slides container */
+    .slides {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(20px, 6vw, 100px);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    /* Typography */
+    h1, h2 {
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #E91E8C 0%, #B94FD4 50%, #9D4EDD 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subline {
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 400;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.5);
+      margin-top: 28px;
+    }
+
+    /* Cards grid */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(12px, 3vw, 20px);
+      width: 100%;
+      margin-top: clamp(40px, 6vw, 60px);
+    }
+
+    .card {
+      padding: clamp(20px, 3vw, 32px);
+      border-radius: 16px;
+      background: linear-gradient(145deg, rgba(233,30,140,0.12) 0%, rgba(157,78,221,0.08) 100%);
+      border: 1px solid rgba(233,30,140,0.15);
+      text-align: left;
+    }
+
+    .card-label {
+      font-size: clamp(11px, 1.5vw, 13px);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #E91E8C;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 500;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(16px, 3vw, 24px);
+    }
+
+    .stat {
+      padding: clamp(20px, 3vw, 32px);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: clamp(36px, 7vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #E91E8C;
+    }
+
+    .stat-label {
+      font-size: clamp(14px, 2vw, 16px);
+      font-weight: 500;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+
+    .stat-desc {
+      font-size: clamp(12px, 1.5vw, 14px);
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
+    }
+
+    /* Metrics row */
+    .metrics {
+      display: flex;
+      justify-content: center;
+      gap: clamp(28px, 6vw, 64px);
+      flex-wrap: wrap;
+    }
+
+    .metric {
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: clamp(32px, 6vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #E91E8C;
+    }
+
+    .metric-label {
+      font-size: clamp(11px, 1.4vw, 13px);
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-block;
+      padding: clamp(14px, 2vw, 18px) clamp(28px, 4vw, 40px);
+      font-size: clamp(15px, 2vw, 17px);
+      font-weight: 600;
+      color: #0d0d1a;
+      background: linear-gradient(135deg, #E91E8C 0%, #B94FD4 100%);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+      box-shadow: 0 4px 28px rgba(233,30,140,0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(233,30,140,0.5);
+    }
+
+    .btn-launch {
+      padding: clamp(16px, 2.5vw, 24px) clamp(32px, 5vw, 48px);
+      font-size: clamp(16px, 2.2vw, 20px);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Quote box */
+    .quote-box {
+      padding: clamp(24px, 4vw, 36px);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(233,30,140,0.1) 0%, rgba(157,78,221,0.06) 100%);
+      border: 1px solid rgba(233,30,140,0.12);
+      margin-bottom: clamp(32px, 5vw, 44px);
+    }
+
+    .quote-box blockquote {
+      font-size: clamp(16px, 3vw, 24px);
+      font-weight: 400;
+      line-height: 1.5;
+      color: #ffffff;
+      font-style: normal;
+    }
+
+    /* List items */
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: clamp(14px, 2vw, 18px) clamp(18px, 3vw, 24px);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: clamp(12px, 2vw, 16px);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .list-item:hover {
+      background: linear-gradient(135deg, rgba(233,30,140,0.15) 0%, rgba(157,78,221,0.1) 100%);
+      border-color: rgba(233,30,140,0.4);
+      transform: translateX(8px) scale(1.02);
+      box-shadow: 0 4px 20px rgba(233,30,140,0.2);
+    }
+
+    .list-item:hover .list-dot {
+      transform: scale(1.5);
+      box-shadow: 0 0 12px rgba(233,30,140,0.6);
+    }
+
+    .list-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .list-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #E91E8C;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .list-item span {
+      font-size: clamp(15px, 2.2vw, 18px);
+      color: #ffffff;
+      transition: color 0.3s ease;
+    }
+
+    .list-item:hover span {
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(233,30,140,0.3);
+    }
+
+    /* Check items */
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(10px, 2vw, 14px);
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: clamp(12px, 2vw, 16px);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .check-item span {
+      font-size: clamp(13px, 1.8vw, 15px);
+      color: #ffffff;
+    }
+
+    /* Icon box */
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(233,30,140,0.2) 0%, rgba(157,78,221,0.2) 100%);
+      border: 1px solid rgba(233,30,140,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px auto;
+      position: relative;
+    }
+
+    /* Animated icons */
+    .animated-icon {
+      position: absolute;
+      opacity: 0;
+      transform: scale(0.5) rotate(-20deg);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .animated-icon.active {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+
+    /* Formats cards */
+    .format-card {
+      padding: clamp(20px, 3vw, 28px);
+      border-radius: 16px;
+      background: linear-gradient(145deg, rgba(233,30,140,0.1) 0%, rgba(157,78,221,0.06) 100%);
+      border: 1px solid rgba(233,30,140,0.12);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .format-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-color, #E91E8C), transparent);
+    }
+
+    .format-card:nth-child(2)::before { --accent-color: #B94FD4; }
+    .format-card:nth-child(3)::before { --accent-color: #9D4EDD; }
+
+    .format-name {
+      font-size: clamp(15px, 2vw, 18px);
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .format-desc {
+      font-size: clamp(13px, 1.6vw, 15px);
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .format-metric {
+      font-size: clamp(14px, 1.8vw, 16px);
+      font-weight: 600;
+      color: #E91E8C;
+    }
+
+    /* Analytics features */
+    .feature-card {
+      padding: clamp(20px, 3vw, 28px);
+      border-radius: 16px;
+      background: linear-gradient(145deg, rgba(233,30,140,0.08) 0%, rgba(157,78,221,0.05) 100%);
+      border: 1px solid rgba(233,30,140,0.1);
+      text-align: left;
+    }
+
+    .feature-title {
+      font-size: clamp(15px, 2vw, 17px);
+      font-weight: 600;
+      color: #E91E8C;
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: clamp(13px, 1.6vw, 15px);
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+    }
+
+    /* Demo embed */
+    .demo-container {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 40px rgba(0,0,0,0.3), 0 0 60px rgba(233,30,140,0.1);
+    }
+
+    .demo-container .aspect-ratio {
+      padding-top: 56.25%;
+    }
+
+    .demo-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .demo-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(10,10,20,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      z-index: 10;
+    }
+
+    .demo-close:hover {
+      background: rgba(233,30,140,0.3);
+    }
+
+    /* Preview Modal */
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 20, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      padding: 24px;
+    }
+
+    .preview-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .preview-modal-content {
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .preview-modal-title {
+      font-size: clamp(20px, 4vw, 32px);
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .preview-modal-desc {
+      font-size: clamp(14px, 2vw, 18px);
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 24px;
+    }
+
+    .preview-image-container {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(233,30,140,0.1) 0%, rgba(157,78,221,0.06) 100%);
+      border: 1px solid rgba(233,30,140,0.2);
+      box-shadow: 0 8px 48px rgba(0,0,0,0.4), 0 0 80px rgba(233,30,140,0.15);
+    }
+
+    .preview-image-container img {
+      width: 100%;
+      max-height: 60vh;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .preview-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(145deg, rgba(233,30,140,0.08) 0%, rgba(157,78,221,0.04) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .preview-placeholder svg {
+      opacity: 0.3;
+    }
+
+    .preview-placeholder span {
+      font-size: clamp(14px, 2vw, 18px);
+      color: rgba(255,255,255,0.4);
+    }
+
+    .preview-close {
+      position: absolute;
+      top: -48px;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: background 0.2s ease;
+    }
+
+    .preview-close:hover {
+      background: rgba(233,30,140,0.3);
+    }
+
+    .preview-back-btn {
+      margin-top: 24px;
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preview-back-btn:hover {
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+    }
+
+    /* See Demo link */
+    .see-demo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: clamp(12px, 1.5vw, 14px);
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .see-demo-link:hover {
+      color: #E91E8C;
+    }
+
+    .see-demo-link svg {
+      transition: transform 0.2s ease;
+    }
+
+    .see-demo-link:hover svg {
+      transform: translateX(2px);
+    }
+
+    /* Embed feature cards */
+    .embed-feature {
+      padding: clamp(24px, 4vw, 36px);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(233,30,140,0.1) 0%, rgba(157,78,221,0.06) 100%);
+      border: 1px solid rgba(233,30,140,0.15);
+      text-align: center;
+    }
+
+    .embed-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(233,30,140,0.25) 0%, rgba(157,78,221,0.2) 100%);
+      border: 1px solid rgba(233,30,140,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+    }
+
+    .embed-title {
+      font-size: clamp(16px, 2.2vw, 20px);
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .embed-desc {
+      font-size: clamp(13px, 1.6vw, 15px);
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+    }
+
+    /* Carousel */
+    .carousel-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(12px, 3vw, 24px);
+      width: 100%;
+    }
+
+    .carousel-arrow {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .carousel-arrow:hover {
+      background: rgba(233,30,140,0.2);
+      border-color: rgba(233,30,140,0.4);
+      color: #ffffff;
+    }
+
+    .carousel-arrow:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      overflow: hidden;
+    }
+
+    .carousel-item {
+      display: none;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .carousel-item.active {
+      display: block;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .demo-label {
+      font-size: clamp(12px, 1.5vw, 14px);
+      font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .carousel-dot:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    .carousel-dot.active {
+      background: #E91E8C;
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    /* Circular Metrics */
+    .metric-circle {
+      position: relative;
+      width: clamp(100px, 15vw, 140px);
+      height: clamp(100px, 15vw, 140px);
+    }
+
+    .metric-ring {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.1);
+      stroke-width: 6;
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke: #E91E8C;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 339;
+      transition: stroke-dasharray 1s ease;
+    }
+
+    .ring-full {
+      stroke-dasharray: 339 339;
+    }
+
+    .metric-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .metric-circle-value {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .metric-circle-label {
+      font-size: clamp(8px, 1.2vw, 11px);
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    /* Testimonial Card */
+    .testimonial-card {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 32px);
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      text-align: left;
+    }
+
+    .testimonial-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .testimonial-logo {
+      flex-shrink: 0;
+    }
+
+    .testimonial-info {
+      flex: 1;
+    }
+
+    .testimonial-title {
+      font-size: clamp(12px, 1.6vw, 14px);
+      font-weight: 700;
+      color: #1a1a1a;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .testimonial-company {
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .testimonial-divider {
+      height: 1px;
+      background: rgba(0,0,0,0.1);
+      margin: 16px 0;
+    }
+
+    .testimonial-quote {
+      font-size: clamp(13px, 1.8vw, 16px);
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* Footer links */
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(16px, 3vw, 24px);
+      margin-top: clamp(24px, 4vw, 32px);
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: clamp(14px, 1.8vw, 16px);
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-links a:hover {
+      color: #E91E8C;
+    }
+
+    .footer-links .divider {
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .logo { top: 16px; left: 16px; }
+      .slide-counter { top: 16px; right: 16px; }
+      .progress { bottom: 20px; }
+      .nav-hint { bottom: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+
+  <!-- Logo -->
+  <div class="logo">
+    <img
+      src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/a5732cae-d0ca-4c87-fd84-b6328a710b00/public"
+      alt="ViewFi"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+    <div class="logo-fallback">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#E91E8C" stroke-width="1.5"/>
+        <circle cx="12" cy="12" r="5" stroke="#E91E8C" stroke-width="1.5"/>
+        <circle cx="12" cy="12" r="2" fill="#E91E8C"/>
+      </svg>
+      <span>ViewFi</span>
+    </div>
+  </div>
+
+  <!-- Slide counter -->
+  <div class="slide-counter">
+    <span id="currentSlide">1</span> / <span id="totalSlides">18</span>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="progress"></div>
+
+  <!-- Nav hint -->
+  <div class="nav-hint" id="navHint">Press → or swipe to continue</div>
+
+  <!-- Slides -->
+  <div class="slides" id="slides">
+
+    <!-- Slide 1: Opening -->
+    <div class="slide active" data-slide="0">
+      <div style="text-align: center; max-width: 1000px;">
+        <img
+          src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/8f338507-ba88-454f-a73e-13872cf60c00/public"
+          alt="ViewFi"
+          style="max-width: 100%; height: auto; max-height: 35vh; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 8px 48px rgba(0,0,0,0.3), 0 0 80px rgba(233,30,140,0.1);"
+        />
+        <h1 style="font-size: clamp(32px, 7vw, 64px);">The Rewarded Video Solution</h1>
+        <p class="gradient-text" style="font-size: clamp(20px, 4vw, 32px); font-weight: 400; margin-top: 16px;">
+          Scalable Fandom. Engaged Audiences.
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 2: Problem -->
+    <div class="slide" data-slide="1">
+      <div style="text-align: center; max-width: 750px;">
+        <h2 style="font-size: clamp(26px, 5.5vw, 52px);">Audiences expect value for their attention.</h2>
+        <p class="subline">Traditional ads interrupt. They don't connect.</p>
+        <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/ac8f1178-8f91-49e8-3af5-3f2639f66b00/public" alt="ViewFi illustration" style="margin-top: 40px; max-width: 100%; max-height: 300px; border-radius: 12px;">
+      </div>
+    </div>
+
+    <!-- Slide 3: Stats -->
+    <div class="slide" data-slide="2">
+      <div style="text-align: center; width: 100%; max-width: 1000px;">
+        <h2 class="gradient-text" style="font-size: clamp(24px, 5vw, 44px); margin-bottom: clamp(32px, 6vw, 56px);">
+          Users Embrace Rewarded Ads
+        </h2>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value"><span class="counter" data-target="90" data-suffix="%" data-delay="0">0%</span></div>
+            <div class="stat-label">completion rates</div>
+            <div class="stat-desc">Strong user engagement</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value"><span class="counter" data-target="87" data-suffix="%" data-delay="400">0%</span></div>
+            <div class="stat-label">positive sentiment</div>
+            <div class="stat-desc">Users appreciate the value exchange</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value"><span class="counter" data-target="62" data-suffix="%" data-delay="800">0%</span></div>
+            <div class="stat-label">of Gen Z</div>
+            <div class="stat-desc">Find rewards most engaging</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Shift -->
+    <div class="slide" data-slide="3">
+      <div style="text-align: center; max-width: 850px;">
+        <div class="icon-box" id="animatedIconBox">
+          <!-- Play Icon -->
+          <svg class="animated-icon active" id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          <!-- Gift Icon -->
+          <svg class="animated-icon" id="icon-gift" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="8" width="18" height="14" rx="2"/>
+            <path d="M12 8v14"/>
+            <path d="M3 12h18"/>
+            <path d="M12 8c-2-3-6-3-6 0s4 0 6 0c2-3 6-3 6 0s-4 0-6 0"/>
+          </svg>
+          <!-- Email Icon -->
+          <svg class="animated-icon" id="icon-email" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M22 6l-10 7L2 6"/>
+          </svg>
+          <!-- Heart Icon -->
+          <svg class="animated-icon" id="icon-heart" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <!-- Arrow Up Icon -->
+          <svg class="animated-icon" id="icon-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"/>
+            <polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </div>
+        <h2 style="font-size: clamp(24px, 5vw, 48px);">What if every view built your community?</h2>
+        <p class="subline" style="margin-top: 24px;">
+          With ViewFi, brands aren't just buying attention — they're building relationships.
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 5: Product -->
+    <div class="slide" data-slide="4">
+      <div style="text-align: center; width: 100%; max-width: 900px;">
+        <div style="margin-bottom: 16px;">
+          <img
+            src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/a5732cae-d0ca-4c87-fd84-b6328a710b00/public"
+            alt="ViewFi"
+            style="height: 48px; width: auto;"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          />
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="display: none;">
+            <circle cx="12" cy="12" r="10" stroke="#E91E8C" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="5" stroke="#E91E8C" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="2" fill="#E91E8C"/>
+          </svg>
+        </div>
+        <h2 style="font-size: clamp(36px, 8vw, 72px); font-weight: 700; letter-spacing: -0.04em;">Video Quests</h2>
+        <p style="font-size: clamp(16px, 2.5vw, 22px); color: rgba(255,255,255,0.6); margin-top: 16px; margin-bottom: 8px;">
+          Rewarded video. <span class="gradient-text" style="font-weight: 600;">Your rewards. Your rules.</span>
+        </p>
+        <p style="font-size: clamp(13px, 1.8vw, 16px); color: rgba(255,255,255,0.4); margin-bottom: clamp(24px, 4vw, 40px); max-width: 600px; margin-left: auto; margin-right: auto;">
+          Plug into your existing loyalty program — no publisher middlemen.
+        </p>
+        <div class="cards">
+          <div class="card">
+            <div class="card-label">Engage</div>
+            <div class="card-value">90%+ completion rates</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Convert</div>
+            <div class="card-value">6-12% claim rate</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Own</div>
+            <div class="card-value">First-party data</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6: Embed & Publish -->
+    <div class="slide" data-slide="5">
+      <div style="text-align: center; width: 100%; max-width: 950px;">
+        <h2 class="gradient-text" style="font-size: clamp(24px, 5vw, 44px); margin-bottom: 12px;">
+          Embed & Publish Everywhere
+        </h2>
+        <p style="font-size: clamp(14px, 2vw, 18px); color: rgba(255,255,255,0.5); margin-bottom: clamp(32px, 5vw, 48px); max-width: 600px; margin-left: auto; margin-right: auto;">
+          Maximize reach with Video Quests that work anywhere
+        </p>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(20px, 4vw, 32px);">
+          <div class="embed-feature">
+            <div class="embed-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <div class="embed-title">Embed on Your Site</div>
+            <div class="embed-desc">Drop a simple embed code on any webpage. Drive higher engagement directly on your owned properties with interactive Video Quests.</div>
+          </div>
+          <div class="embed-feature">
+            <div class="embed-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B94FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+            </div>
+            <div class="embed-title">Social Video URLs</div>
+            <div class="embed-desc">Publish and promote shareable video URLs that work everywhere—X, Instagram, TikTok, LinkedIn, email, and beyond.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 7: Demo Carousel -->
+    <div class="slide" data-slide="6">
+      <div style="text-align: center; width: 100%; max-width: 1000px;">
+        <h2 class="gradient-text" style="font-size: clamp(24px, 5vw, 44px); margin-bottom: 8px;">
+          See It In Action
+        </h2>
+        <p style="font-size: clamp(14px, 2vw, 18px); color: rgba(255,255,255,0.5); margin-bottom: clamp(24px, 4vw, 36px);">
+          Experience Video Quests live
+        </p>
+
+        <div class="carousel-wrapper">
+          <!-- Left Arrow -->
+          <button class="carousel-arrow carousel-arrow-left" onclick="prevDemo()" id="carouselPrev">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+
+          <!-- Carousel Container -->
+          <div class="carousel-container" id="carouselContainer">
+            <!-- Demo 1: Brand Campaign -->
+            <div class="carousel-item active" data-demo="0">
+              <div class="demo-label">Brand Campaign</div>
+              <div class="demo-container">
+                <div class="aspect-ratio"></div>
+                <iframe
+                  class="demo-iframe"
+                  data-src="https://video-rewards.com/widget/113"
+                  src="https://video-rewards.com/widget/113"
+                  title="ViewFi Video Quest 1"
+                  loading="lazy"
+                  allow="autoplay; fullscreen; encrypted-media"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  style="border:0;"
+                ></iframe>
+              </div>
+            </div>
+
+            <!-- Demo 2: Coupon Campaign -->
+            <div class="carousel-item" data-demo="1">
+              <div class="demo-label">Coupon Campaign</div>
+              <div class="demo-container">
+                <div class="aspect-ratio"></div>
+                <iframe
+                  class="demo-iframe"
+                  data-src="https://video-rewards.com/widget/95223369"
+                  src="about:blank"
+                  title="ViewFi Coupon Campaign"
+                  loading="lazy"
+                  allow="autoplay; fullscreen; encrypted-media"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  style="border:0;"
+                ></iframe>
+              </div>
+            </div>
+
+            <!-- Demo 3: Aptos Web3 Campaign -->
+            <div class="carousel-item" data-demo="2">
+              <div class="demo-label">Aptos Web3 Campaign</div>
+              <div class="demo-container">
+                <div class="aspect-ratio"></div>
+                <iframe
+                  class="demo-iframe"
+                  data-src="https://video-rewards.com/widget/104"
+                  src="about:blank"
+                  title="ViewFi Aptos Web3 Campaign"
+                  loading="lazy"
+                  allow="autoplay; fullscreen; encrypted-media"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  style="border:0;"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Arrow -->
+          <button class="carousel-arrow carousel-arrow-right" onclick="nextDemo()" id="carouselNext">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Carousel Dots -->
+        <div class="carousel-dots" id="carouselDots">
+          <span class="carousel-dot active" onclick="goToDemo(0)"></span>
+          <span class="carousel-dot" onclick="goToDemo(1)"></span>
+          <span class="carousel-dot" onclick="goToDemo(2)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 8: Formats -->
+    <div class="slide" data-slide="7">
+      <div style="text-align: center; width: 100%; max-width: 1000px;">
+        <h2 style="font-size: clamp(22px, 4.5vw, 40px); margin-bottom: clamp(28px, 5vw, 48px);">
+          Ad Formats That Create Fandom
+        </h2>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+          <div class="format-card">
+            <div class="format-name">Mobile Interstitial</div>
+            <div class="format-desc">Full-screen attention capture</div>
+            <div class="format-metric">5-10x higher CTR</div>
+            <div class="see-demo-link" onclick="showPreview('interstitial')">
+              See Demo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+          <div class="format-card">
+            <div class="format-name">Outstream</div>
+            <div class="format-desc">Video ads anywhere on the web</div>
+            <div class="format-metric">30-50% lower CPM</div>
+            <div class="see-demo-link" onclick="showPreview('outstream')">
+              See Demo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+          <div class="format-card">
+            <div class="format-name">Floating Overlay</div>
+            <div class="format-desc">Non-intrusive floating video player</div>
+            <div class="format-metric">High viewability</div>
+            <div class="see-demo-link" onclick="showPreview('overlay')">
+              See Demo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 9: CRM -->
+    <div class="slide" data-slide="8">
+      <div style="text-align: center; max-width: 800px;">
+        <h2 class="gradient-text" style="font-size: clamp(28px, 6vw, 52px); margin-bottom: clamp(32px, 5vw, 48px);">
+          Own Your Audience. Build Your CRM.
+        </h2>
+        <div style="text-align: left;">
+          <div class="list-item">
+            <div class="list-dot"></div>
+            <span>Run custom reward campaigns</span>
+          </div>
+          <div class="list-item">
+            <div class="list-dot"></div>
+            <span>Collect first-party data & insights</span>
+          </div>
+          <div class="list-item">
+            <div class="list-dot"></div>
+            <span>Retarget via programmatic, email, social</span>
+          </div>
+          <div class="list-item">
+            <div class="list-dot"></div>
+            <span>Track views, clicks, conversions, and more</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: Analytics -->
+    <div class="slide" data-slide="9">
+      <div style="text-align: center; width: 100%; max-width: 950px;">
+        <h2 style="font-size: clamp(24px, 5vw, 44px); margin-bottom: clamp(28px, 5vw, 44px);">
+          Data & Analytics
+        </h2>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div class="feature-card">
+            <div class="feature-title">First-Party Data</div>
+            <div class="feature-desc">Own your audience—no cookie dependencies</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Real-Time Tracking</div>
+            <div class="feature-desc">Play rates, completion, claims, CTRs</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Funnel Analysis</div>
+            <div class="feature-desc">Visualize drop-off, optimize performance</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: clamp(24px, 4vw, 36px);">
+          <button onclick="showDataDashboard()" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; font-size: clamp(14px, 1.8vw, 16px); font-weight: 600; color: #ffffff; background: linear-gradient(135deg, rgba(233,30,140,0.2) 0%, rgba(157,78,221,0.15) 100%); border: 1px solid rgba(233,30,140,0.3); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18"/>
+              <path d="M9 21V9"/>
+            </svg>
+            View Data Dashboard
+          </button>
+          <button onclick="showAnalyticsDashboard()" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; font-size: clamp(14px, 1.8vw, 16px); font-weight: 600; color: #ffffff; background: linear-gradient(135deg, rgba(233,30,140,0.2) 0%, rgba(157,78,221,0.15) 100%); border: 1px solid rgba(233,30,140,0.3); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18"/>
+              <path d="M18 17V9"/>
+              <path d="M13 17V5"/>
+              <path d="M8 17v-3"/>
+            </svg>
+            View Analytics Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 11: Proof -->
+    <div class="slide" data-slide="10">
+      <div style="text-align: center; max-width: 850px; width: 100%;">
+        <h2 class="gradient-text" style="font-size: clamp(20px, 4vw, 36px); margin-bottom: clamp(24px, 4vw, 36px);">
+          Proven Results
+        </h2>
+        <div class="quote-box">
+          <blockquote>
+            "Magic Eden saw 85% completion rates and 12% conversion to their marketplace using Video Quests."
+          </blockquote>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-value">4x</div>
+            <div class="metric-label">engagement lift</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">3.4%</div>
+            <div class="metric-label">average CTR</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">5x</div>
+            <div class="metric-label">purchase intent</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 12: DSPs, Networks, Publishers -->
+    <div class="slide" data-slide="11">
+      <div style="text-align: center; width: 100%; max-width: 1000px;">
+        <h2 style="font-size: clamp(24px, 5vw, 44px); margin-bottom: 8px;">For DSPs, Networks, Publishers</h2>
+        <p style="font-size: clamp(14px, 2vw, 18px); color: rgba(255,255,255,0.5); margin-bottom: 8px;">
+          Increase Yield. Add video performance. Maximise revenues.
+        </p>
+        <p style="font-size: clamp(12px, 1.6vw, 14px); color: #E91E8C; margin-bottom: clamp(20px, 3vw, 28px);">
+          IAB standard formats — fully compatible with major DSPs
+        </p>
+
+        <!-- Feature Cards -->
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: clamp(20px, 3vw, 28px);">
+          <div class="feature-card">
+            <div class="feature-title">VAST/VPAID Support</div>
+            <div class="feature-desc">Standard video ad tags for seamless integration</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Real-Time Bidding</div>
+            <div class="feature-desc">Programmatic access to premium rewarded inventory</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">White-Label Solutions</div>
+            <div class="feature-desc">Custom branded reward experiences</div>
+          </div>
+        </div>
+
+        <!-- Check Items -->
+        <div class="check-grid" style="max-width: 700px; margin: 0 auto clamp(20px, 3vw, 28px) auto;">
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Generate ad tags in minutes</span>
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Higher CPMs than banners</span>
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Multiple formats</span>
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Real-time reporting</span>
+          </div>
+        </div>
+
+        <a href="https://video-rewards.com/docs/advertising/" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; font-size: clamp(13px, 1.6vw, 15px); color: #E91E8C; text-decoration: none;">
+          View Integration Guide
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7M17 7H7M17 7V17"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Slide 13: Reward Types -->
+    <div class="slide" data-slide="12">
+      <div style="text-align: center; width: 100%; max-width: 1000px;">
+        <h2 style="font-size: clamp(22px, 4.5vw, 40px); margin-bottom: 12px;">
+          Flexible Reward Options
+        </h2>
+        <p class="subline" style="margin-top: 0; margin-bottom: clamp(28px, 5vw, 44px);">Built to fit your reward/loyalty program</p>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+          <div class="card" style="text-align: center;">
+            <div style="margin-bottom: 12px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M2 10h20"/>
+                <path d="M7 15h4"/>
+              </svg>
+            </div>
+            <div class="card-label" style="margin-bottom: 4px;">Coupons</div>
+            <div style="font-size: clamp(12px, 1.5vw, 14px); color: rgba(255,255,255,0.5);">Discount codes & offers</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <div style="margin-bottom: 12px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="8" width="18" height="14" rx="2"/>
+                <path d="M12 8v14"/>
+                <path d="M3 12h18"/>
+                <path d="M12 8c-2-3-6-3-6 0s4 0 6 0c2-3 6-3 6 0s-4 0-6 0"/>
+              </svg>
+            </div>
+            <div class="card-label" style="margin-bottom: 4px;">Vouchers</div>
+            <div style="font-size: clamp(12px, 1.5vw, 14px); color: rgba(255,255,255,0.5);">Gift cards & credits</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <div style="margin-bottom: 12px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+            </div>
+            <div class="card-label" style="margin-bottom: 4px;">Reward Links</div>
+            <div style="font-size: clamp(12px, 1.5vw, 14px); color: rgba(255,255,255,0.5);">Exclusive access & content</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <div style="margin-bottom: 12px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <div class="card-label" style="margin-bottom: 4px;">Charitable</div>
+            <div style="font-size: clamp(12px, 1.5vw, 14px); color: rgba(255,255,255,0.5);">Donate to causes</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <div style="margin-bottom: 12px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/>
+                <path d="M4 22h16"/>
+                <path d="M10 22V9"/>
+                <path d="M14 22V9"/>
+                <path d="M8 9h8"/>
+                <path d="M12 9V5"/>
+              </svg>
+            </div>
+            <div class="card-label" style="margin-bottom: 4px;">Contests</div>
+            <div style="font-size: clamp(12px, 1.5vw, 14px); color: rgba(255,255,255,0.5);">Sweepstakes & giveaways</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 14: Roblox Campaigns -->
+    <div class="slide" data-slide="13">
+      <div style="text-align: center; width: 100%; max-width: 900px;">
+        <div style="display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+          <span style="font-size: clamp(12px, 1.5vw, 14px); font-weight: 500; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em;">Roblox Integration</span>
+        </div>
+        <h2 class="gradient-text" style="font-size: clamp(26px, 5.5vw, 48px); margin-bottom: 16px;">
+          Roblox Campaigns
+        </h2>
+        <p style="font-size: clamp(14px, 2vw, 18px); color: rgba(255,255,255,0.5); margin-bottom: clamp(28px, 4vw, 40px); max-width: 600px; margin-left: auto; margin-right: auto;">
+          Reach Gen Z & Gen Alpha with rewarded video experiences in Roblox
+        </p>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: clamp(24px, 4vw, 32px);">
+          <div class="card">
+            <div class="card-label">Earn UGC</div>
+            <div class="card-value">Exclusive wearables & items</div>
+          </div>
+          <div class="card">
+            <div class="card-label">In-Game Currency</div>
+            <div class="card-value">Robux & experience credits</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Drive Traffic</div>
+            <div class="card-value">Direct users to your Roblox experience</div>
+          </div>
+        </div>
+        <a href="https://video-rewards.com/docs/roblox-integration/" target="_blank" style="font-size: clamp(13px, 1.6vw, 15px); color: #E91E8C; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+          View Developer Docs
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7M17 7H7M17 7V17"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Slide 15: Web3 Campaigns -->
+    <div class="slide" data-slide="14">
+      <div style="text-align: center; width: 100%; max-width: 900px;">
+        <div style="display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+          <span style="font-size: clamp(12px, 1.5vw, 14px); font-weight: 500; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em;">Web3 Powered</span>
+        </div>
+        <h2 class="gradient-text" style="font-size: clamp(26px, 5.5vw, 48px); margin-bottom: 16px;">
+          Web3 Campaigns
+        </h2>
+        <p style="font-size: clamp(14px, 2vw, 18px); color: rgba(255,255,255,0.5); margin-bottom: clamp(28px, 4vw, 40px); max-width: 600px; margin-left: auto; margin-right: auto;">
+          Reward users with blockchain-powered digital assets
+        </p>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div class="card">
+            <div class="card-label">Tokens</div>
+            <div class="card-value">Native & custom token rewards</div>
+          </div>
+          <div class="card">
+            <div class="card-label">USDC</div>
+            <div class="card-value">Stablecoin payouts</div>
+          </div>
+          <div class="card">
+            <div class="card-label">NFTs</div>
+            <div class="card-value">Unique digital collectibles</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Digital Assets</div>
+            <div class="card-value">In-game items & memberships</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 16: Success Story -->
+    <div class="slide" data-slide="15">
+      <div style="text-align: center; width: 100%; max-width: 1100px;">
+        <h2 style="font-size: clamp(28px, 6vw, 52px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: clamp(32px, 6vw, 56px);">
+          SUCCESS STORY
+        </h2>
+
+        <!-- Circular Metrics -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: clamp(16px, 4vw, 48px); flex-wrap: wrap; margin-bottom: clamp(40px, 6vw, 64px);">
+          <!-- Metric 1: 8x -->
+          <div class="metric-circle">
+            <svg viewBox="0 0 120 120" class="metric-ring">
+              <circle cx="60" cy="60" r="54" class="ring-bg"/>
+              <circle cx="60" cy="60" r="54" class="ring-progress" style="stroke-dasharray: 280 339;"/>
+            </svg>
+            <div class="metric-inner">
+              <div class="metric-circle-value">8x</div>
+              <div class="metric-circle-label">INCREASE IN<br>ENGAGEMENT</div>
+            </div>
+          </div>
+
+          <!-- Metric 2: 3.4% -->
+          <div class="metric-circle">
+            <svg viewBox="0 0 120 120" class="metric-ring">
+              <circle cx="60" cy="60" r="54" class="ring-bg"/>
+              <circle cx="60" cy="60" r="54" class="ring-progress" style="stroke-dasharray: 200 339;"/>
+            </svg>
+            <div class="metric-inner">
+              <div class="metric-circle-value">3.4%</div>
+              <div class="metric-circle-label">AV. CTR FROM<br>VIEWFI FORMATS</div>
+            </div>
+          </div>
+
+          <!-- Metric 3: 3x -->
+          <div class="metric-circle">
+            <svg viewBox="0 0 120 120" class="metric-ring">
+              <circle cx="60" cy="60" r="54" class="ring-bg"/>
+              <circle cx="60" cy="60" r="54" class="ring-progress" style="stroke-dasharray: 240 339;"/>
+            </svg>
+            <div class="metric-inner">
+              <div class="metric-circle-value">3x</div>
+              <div class="metric-circle-label">INCREASE IN POSITIVE<br>BRAND SENTIMENT</div>
+            </div>
+          </div>
+
+          <!-- Metric 4: 5x -->
+          <div class="metric-circle">
+            <svg viewBox="0 0 120 120" class="metric-ring">
+              <circle cx="60" cy="60" r="54" class="ring-bg"/>
+              <circle cx="60" cy="60" r="54" class="ring-progress ring-full"/>
+            </svg>
+            <div class="metric-inner">
+              <div class="metric-circle-value">5x</div>
+              <div class="metric-circle-label">LIKELY TO JOIN<br>OR PURCHASE</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial Card -->
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <div class="testimonial-logo">
+              <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/3c4389f5-eb10-4608-0fbf-1cbc29d00e00/public" alt="AXA" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;">
+            </div>
+            <div class="testimonial-info">
+              <div class="testimonial-title">MARKETING DIRECTOR,</div>
+              <div class="testimonial-company">AXA</div>
+            </div>
+          </div>
+          <div class="testimonial-divider"></div>
+          <div class="testimonial-quote">
+            AXA ran multiple successful campaigns to convert meetings. Results exceeded expectations!" – Claire Turner, Senior Brand Program Manager
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 17: Trusted By -->
+    <div class="slide" data-slide="16">
+      <div style="text-align: center; width: 100%; max-width: 1000px;">
+        <h2 style="font-size: clamp(20px, 4vw, 36px); color: rgba(255,255,255,0.6); margin-bottom: clamp(40px, 6vw, 60px);">
+          Trusted By Leading Brands
+        </h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: clamp(24px, 4vw, 48px);">
+          <!-- Brand logos -->
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/1bdcdcf2-a890-4323-b664-56f6e5ab5600/public" alt="AXA" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/ba48a043-d7e7-45d9-5dae-9b186e048500/public" alt="Brand Logo" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/cab0fa90-c60a-47f2-bcd8-c06b22c5aa00/public" alt="Magic Eden" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/e3fd8d9a-6f3e-46ed-49fb-9407e08a5700/public" alt="LoopMe" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/bdbf15e2-c8a9-4a03-a381-84794a4d8a00/public" alt="Rarible" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/ed5ac3b1-c96a-4d2a-88d6-ec2fddbc8200/public" alt="Ad Butler" style="height: 60px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/4131f793-8a7a-448c-efa9-2a144abc6100/public" alt="Addressible" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+          <div style="padding: 16px 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+            <img src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/d5f9a274-262f-4b17-9659-39b8478fdf00/public" alt="Consensys" style="height: 40px; width: auto; object-fit: contain;">
+          </div>
+        </div>
+        <p style="font-size: clamp(13px, 1.6vw, 15px); color: rgba(255,255,255,0.4); margin-top: clamp(32px, 5vw, 48px);">
+          And many more leading entertainment, gaming, and consumer brands
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 18: Closing -->
+    <div class="slide" data-slide="17">
+      <div style="text-align: center; max-width: 700px;">
+        <h2 class="gradient-text" style="font-size: clamp(26px, 5.5vw, 52px);">
+          Let's bring your Video Quest to life.
+        </h2>
+        <a href="https://calendly.com/cgale-viewfi/new-meeting" target="_blank" class="btn-primary" style="margin-top: clamp(32px, 5vw, 48px);">
+          Book a Strategy Call
+        </a>
+        <div class="footer-links">
+          <a href="https://viewfi.io" target="_blank">viewfi.io</a>
+          <span class="divider">|</span>
+          <a href="mailto:chris@viewfi.io">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="M22 6l-10 7L2 6"/>
+            </svg>
+            chris@viewfi.io
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Preview Modal -->
+  <div class="preview-modal" id="previewModal">
+    <div class="preview-modal-content">
+      <div class="preview-modal-title" id="previewTitle">Mobile Interstitial</div>
+      <div class="preview-modal-desc" id="previewDesc">Full-screen attention capture with 5-10x higher CTR</div>
+      <div class="preview-image-container">
+        <button class="preview-close" onclick="closePreview()">×</button>
+        <div class="preview-placeholder" id="previewPlaceholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <polygon points="10 8 16 11 10 14 10 8"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+          <span>Ad Format Preview</span>
+        </div>
+      </div>
+      <button class="preview-back-btn" onclick="closePreview()">Back to Formats</button>
+    </div>
+  </div>
+
+  <!-- Data Dashboard Modal -->
+  <div class="preview-modal" id="dataDashboardModal">
+    <div class="preview-modal-content" style="max-width: 700px;">
+      <div class="preview-modal-title">Data Dashboard</div>
+      <div class="preview-modal-desc">Real-time data and performance tracking</div>
+      <div class="preview-image-container">
+        <button class="preview-close" onclick="closeDataDashboard()">×</button>
+        <img
+          src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/ef88aab6-4d11-4583-3558-00df2c201300/public"
+          alt="ViewFi Data Dashboard"
+          style="width: 100%; max-height: 60vh; height: auto; display: block; object-fit: contain;"
+        />
+      </div>
+      <button class="preview-back-btn" onclick="closeDataDashboard()">Close</button>
+    </div>
+  </div>
+
+  <!-- Analytics Dashboard Modal -->
+  <div class="preview-modal" id="analyticsDashboardModal">
+    <div class="preview-modal-content" style="max-width: 700px;">
+      <div class="preview-modal-title">Analytics Dashboard</div>
+      <div class="preview-modal-desc">Detailed analytics and insights</div>
+      <div class="preview-image-container">
+        <button class="preview-close" onclick="closeAnalyticsDashboard()">×</button>
+        <img
+          src="https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/55fb6ce4-3914-4349-3dcb-c88af6682100/public"
+          alt="ViewFi Analytics Dashboard"
+          style="width: 100%; max-height: 60vh; height: auto; display: block; object-fit: contain;"
+        />
+      </div>
+      <button class="preview-back-btn" onclick="closeAnalyticsDashboard()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const totalSlides = 18;
+    let currentSlide = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    // Initialize progress dots
+    const progressContainer = document.getElementById('progress');
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goToSlide(i);
+      dot.style.cursor = 'pointer';
+      progressContainer.appendChild(dot);
+    }
+
+    function updateSlide() {
+      // Update slides
+      document.querySelectorAll('.slide').forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentSlide);
+      });
+
+      // Update progress dots
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+
+      // Update counter
+      document.getElementById('currentSlide').textContent = currentSlide + 1;
+
+      // Update nav hint
+      document.getElementById('navHint').style.opacity = currentSlide === 0 ? '1' : '0';
+
+      // Initialize carousel when on demo slide (slide 6)
+      if (currentSlide === 6) {
+        initCarousel();
+      }
+
+      // Animate counters when on stats slide (slide 2)
+      if (currentSlide === 2) {
+        animateCounters();
+      }
+
+      // Animate icons when on slide 4 (index 3)
+      if (currentSlide === 3) {
+        startIconAnimation();
+      } else {
+        stopIconAnimation();
+      }
+    }
+
+    // Counter animation
+    let countersAnimated = false;
+    function animateCounters() {
+      if (countersAnimated) return;
+      countersAnimated = true;
+
+      const counters = document.querySelectorAll('.counter');
+      counters.forEach(counter => {
+        const target = parseInt(counter.dataset.target);
+        const suffix = counter.dataset.suffix || '';
+        const delay = parseInt(counter.dataset.delay) || 0;
+        const duration = 600; // Animation duration in ms
+        const startTime = performance.now() + delay;
+
+        counter.textContent = '0' + suffix;
+
+        function updateCounter(currentTime) {
+          const elapsed = currentTime - startTime;
+
+          if (elapsed < 0) {
+            requestAnimationFrame(updateCounter);
+            return;
+          }
+
+          const progress = Math.min(elapsed / duration, 1);
+          // Easing function for smooth deceleration
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          const current = Math.floor(easeOut * target);
+
+          counter.textContent = current + suffix;
+
+          if (progress < 1) {
+            requestAnimationFrame(updateCounter);
+          } else {
+            counter.textContent = target + suffix;
+          }
+        }
+
+        requestAnimationFrame(updateCounter);
+      });
+    }
+
+    // Icon animation for slide 4
+    let iconAnimationInterval = null;
+    let currentIconIndex = 0;
+    const iconIds = ['icon-play', 'icon-gift', 'icon-email', 'icon-heart', 'icon-arrow'];
+
+    function startIconAnimation() {
+      if (iconAnimationInterval) return; // Already running
+
+      currentIconIndex = 0;
+      updateActiveIcon();
+
+      iconAnimationInterval = setInterval(() => {
+        currentIconIndex = (currentIconIndex + 1) % iconIds.length;
+        updateActiveIcon();
+      }, 1200); // Change icon every 1.2 seconds
+    }
+
+    function stopIconAnimation() {
+      if (iconAnimationInterval) {
+        clearInterval(iconAnimationInterval);
+        iconAnimationInterval = null;
+      }
+      // Reset to first icon
+      currentIconIndex = 0;
+      updateActiveIcon();
+    }
+
+    function updateActiveIcon() {
+      iconIds.forEach((id, index) => {
+        const icon = document.getElementById(id);
+        if (icon) {
+          if (index === currentIconIndex) {
+            icon.classList.add('active');
+          } else {
+            icon.classList.remove('active');
+          }
+        }
+      });
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < totalSlides) {
+        currentSlide = index;
+        updateSlide();
+      }
+    }
+
+    function nextSlide() {
+      goToSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      goToSlide(currentSlide - 1);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+
+    // Touch navigation
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      touchEndX = e.touches[0].clientX;
+    });
+
+    document.addEventListener('touchend', () => {
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+      }
+    });
+
+    // Demo functions
+    function launchDemo() {
+      document.getElementById('demoPlaceholder').style.display = 'none';
+      document.getElementById('demoEmbed').style.display = 'block';
+      document.getElementById('demoIframe').src = 'https://video-rewards.com/widget/113';
+    }
+
+    // Demo Carousel
+    let currentDemo = 0;
+    const totalDemos = 3; // Update this when adding more demos
+
+    function updateCarousel() {
+      // Update carousel items
+      document.querySelectorAll('.carousel-item').forEach((item, i) => {
+        item.classList.toggle('active', i === currentDemo);
+        // Lazy load iframe when active
+        if (i === currentDemo) {
+          const iframe = item.querySelector('.demo-iframe');
+          if (iframe && iframe.dataset.src) {
+            const currentSrc = iframe.getAttribute('src');
+            if (!currentSrc || currentSrc === '' || currentSrc === 'about:blank' || currentSrc === window.location.href) {
+              iframe.src = iframe.dataset.src;
+            }
+          }
+        }
+      });
+
+      // Update dots
+      document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentDemo);
+      });
+
+      // Update arrow states
+      document.getElementById('carouselPrev').style.opacity = currentDemo === 0 ? '0.3' : '1';
+      document.getElementById('carouselNext').style.opacity = currentDemo === totalDemos - 1 ? '0.3' : '1';
+    }
+
+    function nextDemo() {
+      if (currentDemo < totalDemos - 1) {
+        currentDemo++;
+        updateCarousel();
+      }
+    }
+
+    function prevDemo() {
+      if (currentDemo > 0) {
+        currentDemo--;
+        updateCarousel();
+      }
+    }
+
+    function goToDemo(index) {
+      if (index >= 0 && index < totalDemos) {
+        currentDemo = index;
+        updateCarousel();
+      }
+    }
+
+    // Initialize carousel on first demo slide visit
+    function initCarousel() {
+      const firstIframe = document.querySelector('.carousel-item.active .demo-iframe');
+      if (firstIframe && firstIframe.dataset.src && !firstIframe.src) {
+        firstIframe.src = firstIframe.dataset.src;
+      }
+      updateCarousel();
+    }
+
+    // Preview modal data
+    const previewData = {
+      interstitial: {
+        title: 'Mobile Interstitial',
+        desc: 'Full-screen attention capture with 5-10x higher CTR',
+        image: 'https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/3df71706-41d8-4b7e-0721-e8cc6007e900/public'
+      },
+      outstream: {
+        title: 'Outstream',
+        desc: 'Video ads anywhere on the web with 30-50% lower CPM',
+        image: 'https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/bd9735ff-7f34-488f-3fcd-ca2f977c5500/public'
+      },
+      overlay: {
+        title: 'Floating Overlay',
+        desc: 'Non-intrusive floating video player',
+        image: 'https://imagedelivery.net/uYHlHjMhbvNHB1x4JZscLw/6581eb8a-fd03-4bb4-02d5-e25c3f2d1600/public'
+      }
+    };
+
+    function showPreview(format) {
+      const data = previewData[format];
+      if (data) {
+        document.getElementById('previewTitle').textContent = data.title;
+        document.getElementById('previewDesc').textContent = data.desc;
+
+        const placeholder = document.getElementById('previewPlaceholder');
+        if (data.image) {
+          placeholder.innerHTML = `<img src="${data.image}" alt="${data.title}" style="width: 100%; height: auto; display: block; border-radius: 8px;" />`;
+          placeholder.style.aspectRatio = 'auto';
+          placeholder.style.background = 'transparent';
+        } else {
+          placeholder.innerHTML = `
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#E91E8C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <polygon points="10 8 16 11 10 14 10 8"/>
+              <line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+            <span>Demo coming soon</span>`;
+          placeholder.style.aspectRatio = '16/9';
+          placeholder.style.background = 'linear-gradient(145deg, rgba(233,30,140,0.08) 0%, rgba(157,78,221,0.04) 100%)';
+        }
+
+        document.getElementById('previewModal').classList.add('active');
+      }
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').classList.remove('active');
+    }
+
+    // Dashboard modal functions
+    function showDataDashboard() {
+      document.getElementById('dataDashboardModal').classList.add('active');
+    }
+
+    function closeDataDashboard() {
+      document.getElementById('dataDashboardModal').classList.remove('active');
+    }
+
+    function showAnalyticsDashboard() {
+      document.getElementById('analyticsDashboardModal').classList.add('active');
+    }
+
+    function closeAnalyticsDashboard() {
+      document.getElementById('analyticsDashboardModal').classList.remove('active');
+    }
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (document.getElementById('previewModal').classList.contains('active')) {
+          closePreview();
+        }
+        if (document.getElementById('dataDashboardModal').classList.contains('active')) {
+          closeDataDashboard();
+        }
+        if (document.getElementById('analyticsDashboardModal').classList.contains('active')) {
+          closeAnalyticsDashboard();
+        }
+      }
+    });
+
+    // Close preview when clicking outside
+    document.getElementById('previewModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('previewModal')) {
+        closePreview();
+      }
+    });
+
+    // Close data dashboard when clicking outside
+    document.getElementById('dataDashboardModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('dataDashboardModal')) {
+        closeDataDashboard();
+      }
+    });
+
+    // Close analytics dashboard when clicking outside
+    document.getElementById('analyticsDashboardModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('analyticsDashboardModal')) {
+        closeAnalyticsDashboard();
+      }
+    });
+  </script>
+</body>
+</html>
