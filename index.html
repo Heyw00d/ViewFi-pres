@@ -941,6 +941,25 @@
       .progress { bottom: 20px; }
       .nav-hint { bottom: 48px; }
     }
+      /* Mobile responsive embeds */
+    @media (max-width: 768px) {
+      .demo-container {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .demo-container iframe {
+        min-height: 70vh !important;
+        height: 70vh !important;
+      }
+      .carousel-arrow {
+        position: relative !important;
+        transform: none !important;
+        top: auto !important;
+      }
+      .carousel-dots {
+        margin-top: 16px;
+      }
+    }
   </style>
 </head>
 <body>
