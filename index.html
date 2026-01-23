@@ -943,12 +943,24 @@
     }
       /* Mobile responsive embeds */
     @media (max-width: 768px) {
+      .aspect-ratio {
+        padding-bottom: 120% !important;
+      }
+      .carousel-wrapper {
+        padding: 0 10px !important;
+      }
+      .demo-label {
+        font-size: 12px !important;
+      }
+    }
+    @media (max-width: 768px) {
       .demo-container {
         max-width: 100% !important;
         width: 100% !important;
       }
       .demo-container iframe {
         min-height: 70vh !important;
+        width: 100% !important;
         height: 70vh !important;
       }
       .carousel-arrow {
@@ -1223,7 +1235,7 @@
                 <div class="aspect-ratio"></div>
                 <iframe
                   class="demo-iframe"
-                  data-src="https://video-rewards.com/widget/104"
+                  data-src="https://video-rewards.com/widget/120"
                   src="about:blank"
                   title="ViewFi Aptos Web3 Campaign"
                   loading="lazy"
